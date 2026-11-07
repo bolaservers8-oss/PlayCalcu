@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check nexo-game.js && node --check ../galaxy-multiplayer-client.js && node --check ../nexo-coop-client.js"
+    "check": "node --check server.js && node --check nexo-game.js && node --check ../galaxy-multiplayer-client.js && node --check ../nexo-coop-client.js && node --input-type=module -e \"import('./nexo-game.js').then(({ createNexoGame, nexoGameSnapshot, tickNexoGame }) => { if (![createNexoGame, nexoGameSnapshot, tickNexoGame].every((exported) => typeof exported === 'function')) throw new Error('Nexo server exports are incomplete'); })\""
   },
   "engines": {
     "node": ">=20"
