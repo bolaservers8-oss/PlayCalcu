@@ -40,7 +40,7 @@ const ARENA = {
   exit: { x: 900, y: 270, radius: 25 }
 };
 
-function createNexoGame(room) {
+export function createNexoGame(room) {
   room.game = {
     map: structuredClone(ARENA),
     enemies: [
@@ -87,7 +87,7 @@ function emptyInput() {
   return { moveX: 0, moveY: 0, aimX: 0, aimY: 0, shoot: false, melee: false, interact: false };
 }
 
-function nexoGameSnapshot(room) {
+export function nexoGameSnapshot(room) {
   const game = room.game;
   if (!game) return null;
   return {
