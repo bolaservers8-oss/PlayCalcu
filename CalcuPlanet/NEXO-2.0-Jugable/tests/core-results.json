@@ -1,0 +1,143 @@
+{
+  "suite": "núcleo",
+  "passed": 34,
+  "total": 34,
+  "results": [
+    {
+      "name": "Validación y round-trip JSON: habitaciones",
+      "ok": true
+    },
+    {
+      "name": "Validación y round-trip JSON: oficinas",
+      "ok": true
+    },
+    {
+      "name": "Validación y round-trip JSON: almacen",
+      "ok": true
+    },
+    {
+      "name": "Validación y round-trip JSON: restaurante",
+      "ok": true
+    },
+    {
+      "name": "Una sola simulación para ambos modos",
+      "ok": true
+    },
+    {
+      "name": "Movimiento y normalización diagonal",
+      "ok": true
+    },
+    {
+      "name": "Movimiento no atraviesa paredes ni a delta grande",
+      "ok": true
+    },
+    {
+      "name": "Mapa grande sin límites de arena originales",
+      "ok": true
+    },
+    {
+      "name": "Validador rechaza zona inaccesible",
+      "ok": true
+    },
+    {
+      "name": "Visibilidad sólida y ventana transparente separadas de física",
+      "ok": true
+    },
+    {
+      "name": "A* rodea pared por una ruta alternativa",
+      "ok": true
+    },
+    {
+      "name": "Patrullaje se desplaza",
+      "ok": true
+    },
+    {
+      "name": "Enemigo no detecta a través de pared",
+      "ok": true
+    },
+    {
+      "name": "Enemigo detecta por distancia orientación y visión",
+      "ok": true
+    },
+    {
+      "name": "Un sonido dispara investigación sin omnisciencia",
+      "ok": true
+    },
+    {
+      "name": "Disparo consume munición y mata realmente",
+      "ok": true
+    },
+    {
+      "name": "Recarga tras tiempo y sin regeneración gratuita",
+      "ok": true
+    },
+    {
+      "name": "Recogida intercambia y conserva el arma anterior",
+      "ok": true
+    },
+    {
+      "name": "No se recoge a través de una pared",
+      "ok": true
+    },
+    {
+      "name": "Lanzar arma derriba y permite recuperación",
+      "ok": true
+    },
+    {
+      "name": "Cuchillo lanzado elimina",
+      "ok": true
+    },
+    {
+      "name": "Puños derriban; X ejecuta y puntúa",
+      "ok": true
+    },
+    {
+      "name": "Puerta golpea por su barrido físico",
+      "ok": true
+    },
+    {
+      "name": "Ventana recibe daño y se rompe; bala detenida salvo penetración",
+      "ok": true
+    },
+    {
+      "name": "Penetración del fusil atraviesa vidrio hacia enemigo",
+      "ok": true
+    },
+    {
+      "name": "Muerte letal finaliza y reinicio restaura el nivel",
+      "ok": true
+    },
+    {
+      "name": "Máscaras alteran velocidad, daño, reserva y supervivencia",
+      "ok": true
+    },
+    {
+      "name": "Combo, multiplicador, caducidad y resumen final",
+      "ok": true
+    },
+    {
+      "name": "IA cooperativa selecciona jugador visible y cambia de objetivo",
+      "ok": true
+    },
+    {
+      "name": "Input malicioso limitado y no admite estado de combate",
+      "ok": true
+    },
+    {
+      "name": "Dispositivo desconectado no dispara ni se mueve",
+      "ok": true
+    },
+    {
+      "name": "IA cruza una puerta cerrada sin aturdirse a sí misma",
+      "ok": true
+    },
+    {
+      "name": "IA ejecuta la ruta alternativa alrededor de una pared",
+      "ok": true
+    },
+    {
+      "name": "Pesado exige flanqueo o arma penetrante desde el frente",
+      "ok": true
+    }
+  ]
+}

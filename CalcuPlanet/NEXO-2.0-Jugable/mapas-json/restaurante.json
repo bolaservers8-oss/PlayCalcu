@@ -1,0 +1,483 @@
+{
+  "id": "restaurante",
+  "name": "04 · Último turno / Restaurante",
+  "author": "NEXO",
+  "version": 2,
+  "width": 960,
+  "height": 540,
+  "floors": [
+    {
+      "x": 18,
+      "y": 18,
+      "width": 924,
+      "height": 504,
+      "color": "#172729",
+      "label": "04 · Último turno / Restaurante",
+      "id": "floors-0"
+    }
+  ],
+  "walls": [
+    {
+      "x": 0,
+      "y": 522,
+      "width": 960,
+      "height": 18,
+      "id": "walls-1",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-2",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 942,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-3",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 590,
+      "y": 18,
+      "width": 14,
+      "height": 180,
+      "id": "walls-3-n",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 590,
+      "y": 280,
+      "width": 14,
+      "height": 242,
+      "id": "walls-4",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 604,
+      "y": 330,
+      "width": 180,
+      "height": 14,
+      "id": "walls-5",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 864,
+      "y": 330,
+      "width": 78,
+      "height": 14,
+      "id": "walls-6",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 18,
+      "id": "walls-7",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 460,
+      "y": 0,
+      "width": 500,
+      "height": 18,
+      "id": "walls-8",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    }
+  ],
+  "spawns": [
+    {
+      "x": 72,
+      "y": 270,
+      "id": "spawns-0"
+    },
+    {
+      "x": 112,
+      "y": 276,
+      "id": "spawns-1"
+    }
+  ],
+  "exits": [
+    {
+      "x": 890,
+      "y": 270,
+      "radius": 25,
+      "id": "exits-0"
+    }
+  ],
+  "weapons": [
+    {
+      "x": 112,
+      "y": 270,
+      "weapon": "shotgun",
+      "ammo": 6,
+      "id": "weapons-0"
+    }
+  ],
+  "enemies": [
+    {
+      "x": 340,
+      "y": 100,
+      "type": "melee",
+      "weapon": "machete",
+      "angle": 1.57,
+      "id": "enemies-0"
+    },
+    {
+      "x": 490,
+      "y": 260,
+      "type": "pistol",
+      "weapon": "pistol",
+      "angle": 3.14,
+      "id": "enemies-1"
+    },
+    {
+      "x": 830,
+      "y": 230,
+      "type": "shotgun",
+      "weapon": "shotgun",
+      "angle": 3.14,
+      "id": "enemies-2"
+    },
+    {
+      "x": 880,
+      "y": 460,
+      "type": "heavy",
+      "weapon": "rifle",
+      "angle": 3.14,
+      "id": "enemies-3"
+    }
+  ],
+  "doors": [
+    {
+      "x": 590,
+      "y": 198,
+      "width": 14,
+      "height": 82,
+      "id": "doors-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 784,
+      "y": 330,
+      "width": 80,
+      "height": 14,
+      "id": "doors-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    }
+  ],
+  "windows": [
+    {
+      "x": 320,
+      "y": 0,
+      "width": 140,
+      "height": 18,
+      "blocksProjectiles": false,
+      "id": "windows-0",
+      "surface": "glass",
+      "blocksMovement": true,
+      "blocksVision": false,
+      "resistance": 0,
+      "hp": 1
+    }
+  ],
+  "obstacles": [
+    {
+      "x": 140,
+      "y": 80,
+      "width": 160,
+      "height": 32,
+      "label": "Recepción",
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 670,
+      "y": 70,
+      "width": 190,
+      "height": 35,
+      "label": "Cocina",
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 670,
+      "y": 180,
+      "width": 120,
+      "height": 32,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 700,
+      "y": 430,
+      "width": 150,
+      "height": 32,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 180,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-4",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 320,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-5",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 410,
+      "y": 180,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-6",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 410,
+      "y": 320,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-7",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "patrols": [],
+  "cover": [
+    {
+      "x": 140,
+      "y": 80,
+      "width": 160,
+      "height": 32,
+      "label": "Recepción",
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 670,
+      "y": 70,
+      "width": 190,
+      "height": 35,
+      "label": "Cocina",
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 670,
+      "y": 180,
+      "width": 120,
+      "height": 32,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 700,
+      "y": 430,
+      "width": 150,
+      "height": 32,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 180,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-4",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 320,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-5",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 410,
+      "y": 180,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-6",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 410,
+      "y": 320,
+      "width": 52,
+      "height": 52,
+      "blocksVision": false,
+      "label": "Mesa",
+      "id": "obstacles-7",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "exit": {
+    "x": 890,
+    "y": 270,
+    "radius": 25,
+    "id": "exits-0"
+  }
+}

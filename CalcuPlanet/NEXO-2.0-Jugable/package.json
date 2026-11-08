@@ -1,0 +1,27 @@
+{
+  "name": "nexo-distrito-umbral",
+  "version": "2.0.0",
+  "description": "NEXO ampliado: distribución web autónoma y servidor cooperativo",
+  "main": "server.js",
+  "scripts": {
+    "test": "node tests/core.cjs",
+    "start": "node server.js",
+    "build": "node tools/build.cjs",
+    "test:browser": "node tests/full-browser.cjs",
+    "test:network": "node tests/network.cjs",
+    "test:mobile": "node tests/mobile.cjs",
+    "test:offline": "node tests/offline.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

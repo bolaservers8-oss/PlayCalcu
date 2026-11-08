@@ -1,0 +1,436 @@
+{
+  "id": "oficinas",
+  "name": "02 · Vidrio / Oficinas",
+  "author": "NEXO",
+  "version": 2,
+  "width": 960,
+  "height": 540,
+  "floors": [
+    {
+      "x": 18,
+      "y": 18,
+      "width": 924,
+      "height": 504,
+      "color": "#172729",
+      "label": "02 · Vidrio / Oficinas",
+      "id": "floors-0"
+    }
+  ],
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 960,
+      "height": 18,
+      "id": "walls-0",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 522,
+      "width": 960,
+      "height": 18,
+      "id": "walls-1",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-2",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 942,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-3",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 240,
+      "y": 18,
+      "width": 16,
+      "height": 200,
+      "id": "walls-4",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 240,
+      "y": 300,
+      "width": 16,
+      "height": 222,
+      "id": "walls-5",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 550,
+      "y": 18,
+      "width": 16,
+      "height": 100,
+      "id": "walls-6",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 550,
+      "y": 192,
+      "width": 16,
+      "height": 190,
+      "id": "walls-7",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 550,
+      "y": 460,
+      "width": 16,
+      "height": 62,
+      "id": "walls-8",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 256,
+      "y": 300,
+      "width": 140,
+      "height": 12,
+      "id": "walls-9",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 470,
+      "y": 300,
+      "width": 80,
+      "height": 12,
+      "id": "walls-10",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    }
+  ],
+  "spawns": [
+    {
+      "x": 72,
+      "y": 270,
+      "id": "spawns-0"
+    },
+    {
+      "x": 112,
+      "y": 276,
+      "id": "spawns-1"
+    }
+  ],
+  "exits": [
+    {
+      "x": 890,
+      "y": 270,
+      "radius": 25,
+      "id": "exits-0"
+    }
+  ],
+  "weapons": [
+    {
+      "x": 112,
+      "y": 270,
+      "weapon": "shotgun",
+      "ammo": 6,
+      "id": "weapons-0"
+    }
+  ],
+  "enemies": [
+    {
+      "x": 380,
+      "y": 220,
+      "type": "pistol",
+      "weapon": "pistol",
+      "angle": 3.14,
+      "id": "enemies-0"
+    },
+    {
+      "x": 430,
+      "y": 460,
+      "type": "melee",
+      "weapon": "katana",
+      "angle": -1.57,
+      "id": "enemies-1"
+    },
+    {
+      "x": 760,
+      "y": 140,
+      "type": "pistol",
+      "weapon": "smg",
+      "angle": 3.14,
+      "id": "enemies-2"
+    },
+    {
+      "x": 840,
+      "y": 450,
+      "type": "heavy",
+      "weapon": "rifle",
+      "angle": -1.57,
+      "id": "enemies-3"
+    }
+  ],
+  "doors": [
+    {
+      "x": 240,
+      "y": 218,
+      "width": 16,
+      "height": 82,
+      "id": "doors-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 550,
+      "y": 382,
+      "width": 16,
+      "height": 78,
+      "id": "doors-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 396,
+      "y": 300,
+      "width": 74,
+      "height": 12,
+      "id": "doors-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    }
+  ],
+  "windows": [
+    {
+      "x": 550,
+      "y": 118,
+      "width": 16,
+      "height": 74,
+      "id": "windows-0",
+      "surface": "glass",
+      "blocksMovement": true,
+      "blocksVision": false,
+      "blocksProjectiles": true,
+      "resistance": 0,
+      "hp": 1
+    }
+  ],
+  "obstacles": [
+    {
+      "x": 330,
+      "y": 100,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 330,
+      "y": 385,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 660,
+      "y": 80,
+      "width": 40,
+      "height": 110,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 780,
+      "y": 340,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 680,
+      "y": 340,
+      "width": 40,
+      "height": 100,
+      "id": "obstacles-4",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "patrols": [],
+  "cover": [
+    {
+      "x": 330,
+      "y": 100,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 330,
+      "y": 385,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 660,
+      "y": 80,
+      "width": 40,
+      "height": 110,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 780,
+      "y": 340,
+      "width": 110,
+      "height": 40,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 680,
+      "y": 340,
+      "width": 40,
+      "height": 100,
+      "id": "obstacles-4",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "exit": {
+    "x": 890,
+    "y": 270,
+    "radius": 25,
+    "id": "exits-0"
+  }
+}

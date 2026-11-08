@@ -1,0 +1,1072 @@
+--- original/nexo-coop-client.js
++++ NEXO/nexo-coop-client.js
+@@ -5,6 +5,8 @@
+   const NICKNAME_KEY = 'calcuPlanetNexoNicknameV1';
+   const $ = (id) => document.getElementById(id);
+   const keys = new Set();
++  const tapUntil = new Map();
++  const pulse = key => (tapUntil.get(key)||0)>performance.now();
+   const touch = { up: false, down: false, left: false, right: false, shoot: false, melee: false, interact: false };
+   let socket = null;
+   let roomState = null;
+@@ -69,7 +71,7 @@
+   }
+ 
+   function socketUrl() {
+-    const base = String((window.DATA_MAP_CONFIG || {}).galaxyRealtimeUrl || '').trim().replace(/\/+$/, '');
++    const base = String((window.NexoApp && window.NexoApp.serverUrl()) || (window.DATA_MAP_CONFIG || {}).galaxyRealtimeUrl || '').trim().replace(/\/+$/, '');
+     if (base) return `${base}/galaxy`;
+     if (window.location.protocol === 'file:' ||
+         (['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port === '2567')) {
+@@ -181,7 +183,7 @@
+         const name = nickname();
+         if (!name) return;
+         saveSession(null);
+-        connect({ type: 'join', gameType: 'nexo', code: room.code, nickname: name });
++        connect({ type: 'join', gameType: 'nexo', code: room.code, nickname: name, mask: window.NexoApp?.mask() });
+       });
+       row.append(label, button);
+       list.appendChild(row);
+@@ -192,7 +194,7 @@
+     roomState = room;
+     playerId = currentPlayerId;
+     isHost = host;
+-    const compatible = room.gameProtocol >= 4 && room.gameType === 'nexo';
++    const compatible = room.gameProtocol >= 5 && room.gameType === 'nexo';
+     const currentPlayer = room.players.find((player) => player.id === playerId);
+     ready = Boolean(currentPlayer && currentPlayer.ready);
+     $('nexoLobby').hidden = false;
+@@ -218,12 +220,12 @@
+     });
+     setStatus(compatible
+       ? `${room.players.length}/2 agentes · ${room.phase === 'running' ? 'operación en curso' : 'esperando al equipo'}`
+-      : 'Actualiza el servidor en Render para iniciar Nexo (protocolo 4).');
++      : 'Actualiza el servidor en Render para iniciar Nexo (protocolo 5).');
+   }
+ 
+   function handleMessage(message) {
+     if (message.type === 'roomState') {
+-      if (message.room.gameType !== 'nexo' || message.room.gameProtocol < 4) {
++      if (message.room.gameType !== 'nexo' || message.room.gameProtocol < 5) {
+         saveSession(null);
+         roomState = null;
+         manuallyClosed = true;
+@@ -245,6 +247,7 @@
+       roomState = message.room;
+       renderRoom(message.room, message.playerId, message.isHost);
+       applyState(message.state);
++      drawArena(message.state,performance.now()/1000);
+       stopGame();
+       $('nexoGameStatus').textContent = message.state.result === 'victory'
+         ? 'Operación completada: el equipo alcanzó la salida.'
+@@ -294,7 +297,7 @@
+       ? 'Modo individual: elimina a los guardias y alcanza el punto de extracción.'
+       : 'Neutralicen la vigilancia y lleguen juntos al punto de extracción.';
+     $('nexoReturnLobby').disabled = true;
+-    $('nexoReturnLobby').textContent = soloMode ? 'Jugar otra vez' : 'Volver a la sala';
++    $('nexoReturnLobby').textContent = soloMode ? 'Reintentar · R' : 'Volver a la sala';
+     window.setCalcuNexoMode(true);
+     applyState(state);
+     clearInterval(inputTimer);
+@@ -304,6 +307,7 @@
+         send({ type: 'input', input: currentInput() });
+         return;
+       }
++      if(document.hidden){lastSoloTickAt=Date.now();return;}
+       const now = Date.now();
+       const delta = Math.min((now - lastSoloTickAt) / 1000, 0.05);
+       lastSoloTickAt = now;
+@@ -317,7 +321,7 @@
+         stopGame();
+         $('nexoGameStatus').textContent = finalState.result === 'victory'
+           ? 'Operación completada: alcanzaste la salida.'
+-          : 'Operación fallida: agotaste tus reservas.';
++          : 'Intento terminado · R para reiniciar inmediatamente.';
+         $('nexoReturnLobby').disabled = false;
+       });
+       if (running) applyState(window.NexoSoloEngine.nexoGameSnapshot(soloRoom));
+@@ -334,13 +338,15 @@
+     inputTimer = null;
+     if (frame) cancelAnimationFrame(frame);
+     frame = null;
+-    keys.clear();
++    keys.clear();tapUntil.clear();
+     mouseFiring = false;
+     Object.keys(touch).forEach((key) => { touch[key] = false; });
+   }
+ 
+   function applyState(state) {
+     if (!state) return;
++    window.dispatchEvent(new CustomEvent('nexo-state', {detail:state}));
++    const cv=$('nexoCanvas'); if(cv.width!==state.map.width||cv.height!==state.map.height){cv.width=state.map.width;cv.height=state.map.height;cv.style.aspectRatio=state.map.width+'/'+state.map.height;}
+     const receivedAt = performance.now();
+     if (currentState) {
+       previousState = currentState;
+@@ -354,7 +360,7 @@
+     const previousLocalPlayer = previousState &&
+       (previousState.players || []).find((player) => player.id === playerId);
+     if (localPlayer) {
+-      if (!predictedPlayer) predictedPlayer = { x: localPlayer.x, y: localPlayer.y };
++      if (!predictedPlayer || previousLocalPlayer && localPlayer.lives < previousLocalPlayer.lives || predictedPlayer && Math.hypot(localPlayer.x-predictedPlayer.x,localPlayer.y-predictedPlayer.y)>100) predictedPlayer = { x: localPlayer.x, y: localPlayer.y };
+       else {
+         predictedPlayer.x += Math.max(-8, Math.min(8, (localPlayer.x - predictedPlayer.x) * 0.3));
+         predictedPlayer.y += Math.max(-8, Math.min(8, (localPlayer.y - predictedPlayer.y) * 0.3));
+@@ -391,9 +397,10 @@
+       moveY: length ? vertical / length : 0,
+       aimX: aim.x,
+       aimY: aim.y,
+-      shoot: mouseFiring || touch.shoot || keys.has('f'),
+-      melee: keys.has(' ') || touch.melee,
+-      interact: keys.has('e') || touch.interact
++      shoot: mouseFiring || touch.shoot || keys.has('f') || pulse('f'),
++      melee: keys.has(' ') || touch.melee || pulse(' '),
++      interact: keys.has('e') || touch.interact || pulse('e'),
++      throw:keys.has('q')||touch.throw||pulse('q'), reload:keys.has('r')||touch.reload||pulse('r'), execute:keys.has('x')||touch.execute||pulse('x')
+     };
+   }
+ 
+@@ -407,11 +414,13 @@
+   }
+ 
+   function handleKeyDown(event) {
++    if(!running && soloMode && event.key.toLowerCase()==='r'){event.preventDefault();startSoloGame();return;}
+     if (!running) return;
+     const key = event.key.toLowerCase();
+-    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'e', 'f'].includes(key)) {
++    if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'e', 'f', 'q', 'r', 'x'].includes(key)) {
+       event.preventDefault();
+       keys.add(key);
++      if(!event.repeat&&['e','q','r','x','f',' '].includes(key))tapUntil.set(key,performance.now()+100);
+     }
+     if (key === 'escape') {
+       event.preventDefault();
+@@ -424,7 +433,7 @@
+   }
+ 
+   function releaseAll() {
+-    keys.clear();
++    keys.clear();tapUntil.clear();
+     mouseFiring = false;
+     Object.keys(touch).forEach((key) => { touch[key] = false; });
+   }
+@@ -443,8 +452,9 @@
+   }
+ 
+   function localBlocked(map, x, y) {
++    return window.NexoMaps.blocked(map,x,y,12);
+     const radius = 12;
+-    const solids = [...map.walls, ...map.cover, ...map.doors.filter((door) => !door.open)];
++    const solids = [];
+     return solids.some((rect) => {
+       const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
+       const closestY = Math.max(rect.y, Math.min(y, rect.y + rect.height));
+@@ -455,7 +465,7 @@
+   function drawAgent(context, player, time) {
+     context.save();
+     context.translate(player.x, player.y);
+-    context.rotate(player.angle || 0);
++    context.rotate((player.angle || 0)+(player.executeTime?Math.sin(time*35)*.35:0));
+     context.globalAlpha = player.lives > 0 ? (player.invulnerable > 0 && Math.floor(time * 10) % 2 ? 0.4 : 1) : 0.25;
+     context.fillStyle = player.color || '#a6f2d8';
+     context.beginPath();
+@@ -492,26 +502,24 @@
+     for (let y = 18; y < canvas.height; y += 32) {
+       context.beginPath(); context.moveTo(18, y); context.lineTo(canvas.width - 18, y); context.stroke();
+     }
+-    state.map.walls.forEach((wall) => {
++    context.textAlign='left';(state.map.floors||[]).forEach(f=>{context.fillStyle=f.color||'#233033';context.fillRect(f.x,f.y,f.width,f.height);if(f.label){context.fillStyle='#89a39a';context.font='10px monospace';context.fillText(f.label,f.x+12,f.y+18);}});
++    state.map.walls.filter(o=>!o.broken).forEach((wall) => {
+       context.fillStyle = '#38433f';
+       context.fillRect(wall.x, wall.y, wall.width, wall.height);
+       context.strokeStyle = '#65736a';
+       context.strokeRect(wall.x + .5, wall.y + .5, wall.width - 1, wall.height - 1);
+     });
+-    state.map.cover.forEach((cover) => {
++    state.map.cover.filter(o=>!o.broken).forEach((cover) => {
+       context.fillStyle = '#4b5148';
+       context.fillRect(cover.x, cover.y, cover.width, cover.height);
+       context.fillStyle = 'rgba(229, 232, 198, .18)';
+       context.fillRect(cover.x + 3, cover.y + 3, Math.max(0, cover.width - 6), 3);
+     });
+-    state.map.doors.forEach((door) => {
+-      context.fillStyle = door.open ? '#52756a' : '#c08c57';
+-      context.fillRect(door.x, door.y, door.width, door.height);
+-      if (!door.open) {
+-        context.strokeStyle = '#f0d7a3';
+-        context.strokeRect(door.x + 4, door.y + 4, door.width - 8, door.height - 8);
+-      }
+-    });
++    state.map.doors.filter(d=>!d.broken).forEach((door) => {
++      context.save();context.translate(door.x,door.y);context.rotate((door.height>door.width?-1:1)*(door.direction||1)*Math.PI/2*(door.progress||0));context.fillStyle=door.open?'#52756a':'#c08c57';context.fillRect(0,0,door.width,door.height);context.strokeStyle='#f0d7a3';context.strokeRect(0,0,door.width,door.height);context.restore();context.fillStyle='#fff0bd';context.fillRect(door.x-2,door.y-2,5,5);
++    });
++    (state.map.windows||[]).filter(w=>!w.broken).forEach(w=>{context.fillStyle='#68dcee88';context.fillRect(w.x,w.y,w.width,w.height);context.strokeStyle='#a9f5ff';context.strokeRect(w.x,w.y,w.width,w.height);});
++    (state.bodies||[]).forEach(b=>{context.fillStyle='#683d47';context.beginPath();context.ellipse(b.x,b.y,17,10,b.angle,0,Math.PI*2);context.fill();});
+     const exit = state.map.exit;
+     context.beginPath();
+     context.arc(exit.x, exit.y, exit.radius, 0, Math.PI * 2);
+@@ -530,10 +538,12 @@
+       context.fillRect(pickup.x - 7, pickup.y - 7, 14, 14);
+       context.strokeStyle = '#fff0bd';
+       context.strokeRect(pickup.x - 5, pickup.y - 5, 10, 10);
++      context.fillStyle='#f1d27b';context.font='10px monospace';context.textAlign='center';context.fillText(NexoSoloEngine.WEAPONS[pickup.weapon]?.name||'MUNICIÓN',pickup.x,pickup.y-12);
+     });
+     (state.enemies || []).forEach((enemy) => {
+       context.save();
+-      context.translate(enemy.x, enemy.y);
++      context.translate(enemy.x, enemy.y);context.rotate(enemy.angle||0);
++      if(enemy.state==='STUNNED')context.globalAlpha=.45;
+       context.fillStyle = enemy.alert > 0 ? '#de7866' : '#a9b48d';
+       context.beginPath();
+       context.arc(0, 0, enemy.type === 'heavy' ? 14 : 11, 0, Math.PI * 2);
+@@ -545,7 +555,7 @@
+         context.fillStyle = '#1c2824';
+         context.fillRect(enemy.x - 15, enemy.y - 20, 30, 4);
+         context.fillStyle = '#e09a74';
+-        context.fillRect(enemy.x - 15, enemy.y - 20, 30 * enemy.hp / 2, 4);
++        context.fillRect(enemy.x - 15, enemy.y - 20, 30 * enemy.hp / 3, 4);
+       }
+       if (enemy.alert > 0) {
+         context.fillStyle = '#ffc778';
+@@ -562,6 +572,10 @@
+       context.fillStyle = '#ff927d';
+       context.beginPath(); context.arc(shot.x, shot.y, 3.5, 0, Math.PI * 2); context.fill();
+     });
++    if(window.NexoApp?.mask()==='watcher'){(state.enemies||[]).filter(e=>e.state!=='STUNNED').forEach(e=>{context.fillStyle='#ff995515';context.beginPath();context.moveTo(e.x,e.y);context.arc(e.x,e.y,e.detection||340,(e.angle||0)-(e.fov||1.8)/2,(e.angle||0)+(e.fov||1.8)/2);context.closePath();context.fill();});}
++    (state.throws||[]).forEach(o=>{context.save();context.translate(o.x,o.y);context.rotate(time*24);context.fillStyle='#f4d776';context.fillRect(-10,-3,20,6);context.restore();});
++    (state.effects||[]).forEach(e=>{context.strokeStyle=e.kind==='execution'?'#ff4577':e.kind==='glass'?'#a1faff':'#ffe9a0';context.lineWidth=2;context.beginPath();context.arc(e.x,e.y,Math.max(3,20*(1-e.life)),0,7);context.stroke();});
++    (state.enemies||[]).filter(e=>e.state==='STUNNED').forEach(e=>{context.fillStyle='#ffdc8f';context.font='11px monospace';context.textAlign='center';context.fillText('DERRIBADO · X',e.x,e.y-22);});
+     (state.players || []).forEach((player) => {
+       drawAgent(context, player, time);
+     });
+@@ -582,10 +596,10 @@
+       enemyShots: interpolate(currentState.enemyShots, previousState && previousState.enemyShots, amount)
+     };
+     const localPlayer = state.players.find((player) => player.id === playerId);
+-    if (localPlayer && predictedPlayer && localPlayer.lives > 0) {
++    if (!soloMode && localPlayer && predictedPlayer && localPlayer.lives > 0) {
+       const input = currentInput();
+-      const nextX = Math.max(30, Math.min(930, predictedPlayer.x + input.moveX * 190 * delta));
+-      const nextY = Math.max(30, Math.min(510, predictedPlayer.y + input.moveY * 190 * delta));
++      const nextX = Math.max(30, Math.min(currentState.map.width-30, predictedPlayer.x + input.moveX * 190 * (NexoSoloEngine.MASKS[localPlayer.mask]?.speed||1) * delta));
++      const nextY = Math.max(30, Math.min(currentState.map.height-30, predictedPlayer.y + input.moveY * 190 * (NexoSoloEngine.MASKS[localPlayer.mask]?.speed||1) * delta));
+       if (!localBlocked(currentState.map, nextX, predictedPlayer.y)) predictedPlayer.x = nextX;
+       if (!localBlocked(currentState.map, predictedPlayer.x, nextY)) predictedPlayer.y = nextY;
+       localPlayer.x = predictedPlayer.x;
+@@ -660,7 +674,11 @@
+         lastInputAt: Date.now()
+       }]
+     };
+-    window.NexoSoloEngine.createNexoGame(soloRoom);
++    soloRoom.mapData = window.NexoApp?.selectedMap();
++    soloRoom.mask = window.NexoApp?.mask();
++    soloRoom.initialWeapon = window.NexoApp?.weapon();
++    soloRoom.rules = window.NexoApp?.rules();
++    try { window.NexoSoloEngine.createNexoGame(soloRoom); } catch(error) { alert(error.message); return; }
+     lastSoloTickAt = Date.now();
+     $('nexoLobbyView').hidden = true;
+     $('nexoGameView').hidden = false;
+@@ -672,7 +690,7 @@
+       const name = nickname();
+       if (!name) return;
+       saveSession(null);
+-      connect({ type: 'create', gameType: 'nexo', nickname: name, visibility: $('nexoVisibility').value });
++      connect({ type: 'create', gameType: 'nexo', nickname: name, visibility: $('nexoVisibility').value, mapData: window.NexoApp?.selectedMap(), mask: window.NexoApp?.mask(), initialWeapon: window.NexoApp?.weapon() });
+     });
+     $('nexoJoinRoom').addEventListener('click', () => {
+       const name = nickname();
+@@ -684,7 +702,7 @@
+         return;
+       }
+       saveSession(null);
+-      connect({ type: 'join', gameType: 'nexo', code, nickname: name });
++      connect({ type: 'join', gameType: 'nexo', code, nickname: name, mask: window.NexoApp?.mask() });
+     });
+     $('nexoRefreshRooms').addEventListener('click', () => connect({ type: 'list', gameType: 'nexo' }));
+     $('nexoReady').addEventListener('click', () => send({ type: 'ready', ready: !ready }));
+@@ -716,8 +734,8 @@
+     const canvas = $('nexoCanvas');
+     canvas.addEventListener('pointermove', updateAim);
+     canvas.addEventListener('pointerdown', (event) => {
+-      updateAim(event);
+-      if (event.pointerType === 'mouse' && event.button === 0) mouseFiring = true;
++      canvas.setPointerCapture(event.pointerId);updateAim(event);
++      if (event.pointerType === 'mouse' && event.button === 0){mouseFiring = true;tapUntil.set('f',performance.now()+80);}
+     });
+     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((name) =>
+       canvas.addEventListener(name, () => { mouseFiring = false; })
+@@ -731,6 +749,7 @@
+         event.preventDefault();
+         button.setPointerCapture(event.pointerId);
+         touch[control] = true;
++        const actionKey={interact:'e',throw:'q',reload:'r',execute:'x',shoot:'f',melee:' '}[control];if(actionKey)tapUntil.set(actionKey,performance.now()+100);
+         button.setAttribute('aria-pressed', 'true');
+       });
+       ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((name) => button.addEventListener(name, release));
+@@ -749,6 +768,7 @@
+ 
+   window.openNexoGame = openPanel;
+   window.startNexoSoloGame = startSoloGame;
+-  window.NexoGame = { handleKeyDown, handleKeyUp, releaseAll };
++  window.NexoGame = { handleKeyDown, handleKeyUp, releaseAll, drawArena, exit:exitToCalculator, restart:startSoloGame, isSolo:()=>soloMode };
++  window.addEventListener('pointerup',()=>{mouseFiring=false;});
+   window.addEventListener('load', initialize, { once: true });
+ })();
+--- original/index.html
++++ NEXO/index.html
+@@ -180,7 +180,8 @@
+   <main id="standaloneHome" class="home">
+     <h1>NEXO · DISTRITO UMBRAL</h1>
+     <p>Juego original de acción cenital. Juega en solitario o coordínate online para abrir rutas y alcanzar la extracción.</p>
+-    <p>Controles de PC: WASD o flechas para moverte, ratón para apuntar, clic o F para disparar, espacio para golpear y E para interactuar. En móvil se recomienda jugar en horizontal.</p>
++    <p>Q: lanzar · X: ejecutar · R: recargar/reintentar. E: recoger/puertas/salida. Controles de PC: WASD o flechas para moverte, ratón para apuntar, clic o F para disparar, espacio para golpear y E para interactuar. En móvil se recomienda jugar en horizontal.</p>
++    <div id="nexoSetup"></div>
+     <div class="home-actions">
+       <button id="playNexoSolo" type="button">Jugar solo</button>
+       <button id="openNexo" class="secondary" type="button">Jugar cooperativo online</button>
+@@ -230,7 +231,7 @@
+       <section id="nexoGameView" class="nexo-game" hidden>
+         <div class="nexo-hud">
+           <div>AGENTES <span id="nexoHudPlayers">2</span></div>
+-          <div>RESERVA <span id="nexoHudLives">3</span></div>
++          <div>VIDAS <span id="nexoHudLives">3</span></div>
+           <div>MUNICIÓN <span id="nexoHudAmmo">10</span></div>
+           <div>OBJETIVO <span id="nexoHudObjective">Neutralizar vigilancia</span></div>
+           <div>EQUIPO <span id="nexoHudScore">0</span></div>
+@@ -248,6 +249,9 @@
+             <button type="button" data-nexo-control="interact">ABRIR / USAR</button>
+             <button type="button" data-nexo-control="melee">GOLPE</button>
+             <button type="button" data-nexo-control="shoot">DISPARAR</button>
++            <button type="button" data-nexo-control="throw">LANZAR</button>
++            <button type="button" data-nexo-control="execute">EJECUTAR</button>
++            <button type="button" data-nexo-control="reload">RECARGAR</button>
+           </div>
+         </div>
+         <p id="nexoGameStatus" class="nexo-game-status" aria-live="polite"></p>
+@@ -259,8 +263,11 @@
+     </div>
+   </section>
+   <script src="data-map-config.js"></script>
+-  <script src="multiplayer/nexo-solo-engine.js"></script>
++  <script src="maps.js"></script>
++  <script src="legacy-map.js"></script>
++  <script src="multiplayer/nexo-core.js"></script>
+   <script src="nexo-coop-client.js"></script>
++  <script src="nexo-tools.js"></script>
+   <script>
+     window.setCalcuNexoMode = function (active) {
+       document.getElementById('nexoPanel').classList.toggle('active', active);
+--- original/data-map-config.js
++++ NEXO/data-map-config.js
+@@ -1,3 +1,2 @@
+-window.DATA_MAP_CONFIG = {
+-  galaxyRealtimeUrl: 'wss://playcalcu.onrender.com'
+-};
++// Vacío: se conecta al servidor que sirve esta página. Para alojamiento separado, URL ws(s) explícita.
++window.DATA_MAP_CONFIG = {galaxyRealtimeUrl: location.protocol==='file:'?'ws://localhost:2567':location.origin.replace(/^http/,'ws')};
+--- original/multiplayer/nexo-solo-engine.js
++++ NEXO/multiplayer/nexo-solo-engine.js
+@@ -1,351 +1 @@
+-const WIDTH = 960;
+-const HEIGHT = 540;
+-const PLAYER_RADIUS = 12;
+-const PLAYER_SPEED = 190;
+-const ENEMY_RADIUS = 12;
+-const PLAYER_COLORS = ['#52f0d0', '#ffb65c'];
+-
+-const ARENA = {
+-  width: WIDTH,
+-  height: HEIGHT,
+-  walls: [
+-    { x: 0, y: 0, width: WIDTH, height: 18 },
+-    { x: 0, y: HEIGHT - 18, width: WIDTH, height: 18 },
+-    { x: 0, y: 0, width: 18, height: HEIGHT },
+-    { x: WIDTH - 18, y: 0, width: 18, height: HEIGHT },
+-    { x: 208, y: 88, width: 20, height: 160 },
+-    { x: 208, y: 326, width: 20, height: 126 },
+-    { x: 385, y: 18, width: 20, height: 114 },
+-    { x: 385, y: 210, width: 20, height: 132 },
+-    { x: 562, y: 88, width: 20, height: 160 },
+-    { x: 562, y: 326, width: 20, height: 126 },
+-    { x: 278, y: 266, width: 90, height: 18 },
+-    { x: 454, y: 266, width: 90, height: 18 },
+-    { x: 715, y: 168, width: 105, height: 18 }
+-  ],
+-  doors: [
+-    { id: 'door-west', x: 208, y: 248, width: 20, height: 78, open: false },
+-    { id: 'door-center', x: 385, y: 132, width: 20, height: 78, open: false },
+-    { id: 'door-east', x: 562, y: 248, width: 20, height: 78, open: false }
+-  ],
+-  cover: [
+-    { x: 96, y: 176, width: 58, height: 22 },
+-    { x: 284, y: 124, width: 52, height: 30 },
+-    { x: 292, y: 384, width: 68, height: 22 },
+-    { x: 466, y: 112, width: 62, height: 22 },
+-    { x: 466, y: 388, width: 62, height: 22 },
+-    { x: 642, y: 334, width: 72, height: 22 },
+-    { x: 812, y: 284, width: 54, height: 30 }
+-  ],
+-  exit: { x: 900, y: 270, radius: 25 }
+-};
+-
+-function createNexoGame(room) {
+-  room.game = {
+-    map: structuredClone(ARENA),
+-    enemies: [
+-      { id: 'guard-a', x: 126, y: 94, homeX: 126, homeY: 94, hp: 1, alert: 0, cooldown: 0, phase: 0, type: 'scout' },
+-      { id: 'guard-b', x: 318, y: 190, homeX: 318, homeY: 190, hp: 1, alert: 0, cooldown: 0.5, phase: 1.4, type: 'scout' },
+-      { id: 'guard-c', x: 486, y: 78, homeX: 486, homeY: 78, hp: 2, alert: 0, cooldown: 1, phase: 2.8, type: 'heavy' },
+-      { id: 'guard-d', x: 664, y: 236, homeX: 664, homeY: 236, hp: 1, alert: 0, cooldown: 0.2, phase: 4.2, type: 'scout' },
+-      { id: 'guard-e', x: 814, y: 410, homeX: 814, homeY: 410, hp: 2, alert: 0, cooldown: 1.4, phase: 5.2, type: 'heavy' }
+-    ],
+-    playerShots: [],
+-    enemyShots: [],
+-    pickups: [
+-      { id: 'ammo-a', type: 'ammo', x: 296, y: 310, amount: 8, collected: false },
+-      { id: 'ammo-b', type: 'ammo', x: 690, y: 100, amount: 8, collected: false }
+-    ],
+-    score: 0,
+-    nextProjectileId: 0,
+-    lastSnapshotAt: 0,
+-    result: null,
+-    exitUnlocked: false
+-  };
+-  room.players.forEach((player, index) => {
+-    player.ready = false;
+-    player.spawnX = 72 + index * 44;
+-    player.spawnY = 270 + (index ? 22 : -22);
+-    player.x = player.spawnX;
+-    player.y = player.spawnY;
+-    player.angle = 0;
+-    player.lives = 3;
+-    player.score = 0;
+-    player.ammo = 10;
+-    player.weapon = 'sidearm';
+-    player.invulnerable = 0;
+-    player.fireCooldown = 0;
+-    player.meleeCooldown = 0;
+-    player.previousInteract = false;
+-    player.input = emptyInput();
+-    player.lastInputAt = Date.now();
+-  });
+-  if (room.players.length === 1) {
+-    room.players[0].lives = 6;
+-    room.players[0].ammo = 18;
+-    room.players[0].invulnerable = 3;
+-  }
+-  room.phase = 'running';
+-}
+-
+-function emptyInput() {
+-  return { moveX: 0, moveY: 0, aimX: 0, aimY: 0, shoot: false, melee: false, interact: false };
+-}
+-
+-function nexoGameSnapshot(room) {
+-  const game = room.game;
+-  if (!game) return null;
+-  return {
+-    map: game.map,
+-    enemies: game.enemies.map((enemy) => ({ ...enemy })),
+-    playerShots: game.playerShots.map((shot) => ({ ...shot })),
+-    enemyShots: game.enemyShots.map((shot) => ({ ...shot })),
+-    pickups: game.pickups.map((pickup) => ({ ...pickup })),
+-    score: game.score,
+-    exitUnlocked: game.exitUnlocked,
+-    result: game.result,
+-    players: room.players.map((player) => ({
+-      id: player.id,
+-      name: player.name,
+-      color: PLAYER_COLORS[room.players.indexOf(player) % PLAYER_COLORS.length],
+-      x: player.x,
+-      y: player.y,
+-      angle: player.angle,
+-      lives: player.lives,
+-      score: player.score,
+-      ammo: player.ammo,
+-      weapon: player.weapon,
+-      invulnerable: player.invulnerable,
+-      connected: player.connected
+-    }))
+-  };
+-}
+-
+-function overlapsCircleRect(x, y, radius, rect) {
+-  const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
+-  const closestY = Math.max(rect.y, Math.min(y, rect.y + rect.height));
+-  const dx = x - closestX;
+-  const dy = y - closestY;
+-  return dx * dx + dy * dy < radius * radius;
+-}
+-
+-function solidRects(game) {
+-  return [...game.map.walls, ...game.map.doors.filter((door) => !door.open), ...game.map.cover];
+-}
+-
+-function blocked(game, x, y, radius) {
+-  return solidRects(game).some((rect) => overlapsCircleRect(x, y, radius, rect));
+-}
+-
+-function moveEntity(game, entity, dx, dy, radius) {
+-  const nextX = Math.max(radius + 18, Math.min(WIDTH - radius - 18, entity.x + dx));
+-  if (!blocked(game, nextX, entity.y, radius)) entity.x = nextX;
+-  const nextY = Math.max(radius + 18, Math.min(HEIGHT - radius - 18, entity.y + dy));
+-  if (!blocked(game, entity.x, nextY, radius)) entity.y = nextY;
+-}
+-
+-function lineBlocked(game, x1, y1, x2, y2) {
+-  const distance = Math.hypot(x2 - x1, y2 - y1);
+-  const steps = Math.ceil(distance / 12);
+-  const solids = solidRects(game);
+-  for (let step = 1; step < steps; step++) {
+-    const x = x1 + (x2 - x1) * step / steps;
+-    const y = y1 + (y2 - y1) * step / steps;
+-    if (solids.some((rect) => x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height)) {
+-      return true;
+-    }
+-  }
+-  return false;
+-}
+-
+-function damagePlayer(player) {
+-  if (player.lives <= 0 || player.invulnerable > 0) return;
+-  player.lives -= 1;
+-  player.invulnerable = 1.2;
+-  if (player.lives > 0) {
+-    player.x = player.spawnX;
+-    player.y = player.spawnY;
+-  }
+-}
+-
+-function knockOutEnemy(game, index, room) {
+-  const [enemy] = game.enemies.splice(index, 1);
+-  game.score += enemy.type === 'heavy' ? 180 : 100;
+-  const scorer = room.players.find((player) => player.id === enemy.lastHitBy);
+-  if (scorer) scorer.score += enemy.type === 'heavy' ? 180 : 100;
+-}
+-
+-function finishNexoGame(room, result, finishGame) {
+-  if (room.game.result) return;
+-  room.game.result = result;
+-  finishGame(room);
+-}
+-
+-function tickNexoGame(room, delta, now, finishGame) {
+-  if (room.phase !== 'running' || !room.game) return;
+-  const game = room.game;
+-  const connectedPlayers = room.players.filter((player) => player.connected && player.lives > 0);
+-
+-  for (const player of room.players) {
+-    if (!player.connected || player.lives <= 0) continue;
+-    if (now - player.lastInputAt > 300) player.input = emptyInput();
+-    const input = player.input;
+-    const moveLength = Math.hypot(input.moveX, input.moveY);
+-    if (moveLength > 0) {
+-      moveEntity(game, player, input.moveX / moveLength * PLAYER_SPEED * delta,
+-        input.moveY / moveLength * PLAYER_SPEED * delta, PLAYER_RADIUS);
+-    }
+-    if (Number.isFinite(input.aimX) && Number.isFinite(input.aimY)) {
+-      player.angle = Math.atan2(input.aimY - player.y, input.aimX - player.x);
+-    }
+-    player.invulnerable = Math.max(0, player.invulnerable - delta);
+-    player.fireCooldown = Math.max(0, player.fireCooldown - delta);
+-    player.meleeCooldown = Math.max(0, player.meleeCooldown - delta);
+-    if (input.interact && !player.previousInteract) {
+-      const door = game.map.doors.find((entry) =>
+-        Math.hypot(player.x - (entry.x + entry.width / 2), player.y - (entry.y + entry.height / 2)) < 58
+-      );
+-      if (door) door.open = !door.open;
+-    }
+-    player.previousInteract = input.interact;
+-
+-    if (input.shoot && player.ammo > 0 && player.fireCooldown <= 0) {
+-      const speed = 520;
+-      game.playerShots.push({
+-        id: ++game.nextProjectileId,
+-        ownerId: player.id,
+-        x: player.x + Math.cos(player.angle) * 18,
+-        y: player.y + Math.sin(player.angle) * 18,
+-        vx: Math.cos(player.angle) * speed,
+-        vy: Math.sin(player.angle) * speed,
+-        life: 1.5
+-      });
+-      player.ammo -= 1;
+-      player.fireCooldown = 0.22;
+-      game.enemies.forEach((enemy) => {
+-        if (Math.hypot(enemy.x - player.x, enemy.y - player.y) < 280) enemy.alert = 5;
+-      });
+-    }
+-
+-    if (input.melee && player.meleeCooldown <= 0) {
+-      player.meleeCooldown = 0.48;
+-      const target = game.enemies.find((enemy) => {
+-        const dx = enemy.x - player.x;
+-        const dy = enemy.y - player.y;
+-        const distance = Math.hypot(dx, dy);
+-        const angleDifference = Math.atan2(Math.sin(Math.atan2(dy, dx) - player.angle),
+-          Math.cos(Math.atan2(dy, dx) - player.angle));
+-        return distance < 38 && Math.abs(angleDifference) < 0.95;
+-      });
+-      if (target) {
+-        target.hp -= 1;
+-        target.lastHitBy = player.id;
+-        target.alert = 5;
+-        if (target.hp <= 0) knockOutEnemy(game, game.enemies.indexOf(target), room);
+-      }
+-    }
+-  }
+-
+-  for (let index = game.playerShots.length - 1; index >= 0; index--) {
+-    const shot = game.playerShots[index];
+-    shot.x += shot.vx * delta;
+-    shot.y += shot.vy * delta;
+-    shot.life -= delta;
+-    if (shot.life <= 0 || blocked(game, shot.x, shot.y, 3)) {
+-      game.playerShots.splice(index, 1);
+-      continue;
+-    }
+-    const enemyIndex = game.enemies.findIndex((enemy) =>
+-      Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < ENEMY_RADIUS + 4
+-    );
+-    if (enemyIndex !== -1) {
+-      const enemy = game.enemies[enemyIndex];
+-      enemy.hp -= 1;
+-      enemy.lastHitBy = shot.ownerId;
+-      enemy.alert = 5;
+-      game.playerShots.splice(index, 1);
+-      if (enemy.hp <= 0) knockOutEnemy(game, enemyIndex, room);
+-    }
+-  }
+-
+-  for (const enemy of game.enemies) {
+-    enemy.alert = Math.max(0, enemy.alert - delta);
+-    enemy.cooldown = Math.max(0, enemy.cooldown - delta);
+-    const target = connectedPlayers
+-      .filter((player) => player.lives > 0)
+-      .sort((a, b) => Math.hypot(a.x - enemy.x, a.y - enemy.y) - Math.hypot(b.x - enemy.x, b.y - enemy.y))[0];
+-    if (!target) continue;
+-    const distance = Math.hypot(target.x - enemy.x, target.y - enemy.y);
+-    const seesTarget = distance < 340 && !lineBlocked(game, enemy.x, enemy.y, target.x, target.y);
+-    if (seesTarget) enemy.alert = Math.max(enemy.alert, 1.5);
+-    if (enemy.alert > 0) {
+-      if (distance > 120) {
+-        const dx = (target.x - enemy.x) / Math.max(distance, 1);
+-        const dy = (target.y - enemy.y) / Math.max(distance, 1);
+-        moveEntity(game, enemy, dx * 54 * delta, dy * 54 * delta, ENEMY_RADIUS);
+-      } else if (enemy.cooldown <= 0 && seesTarget) {
+-        const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x);
+-        const speed = enemy.type === 'heavy' ? 240 : 285;
+-        game.enemyShots.push({
+-          id: ++game.nextProjectileId,
+-          x: enemy.x + Math.cos(angle) * 16,
+-          y: enemy.y + Math.sin(angle) * 16,
+-          vx: Math.cos(angle) * speed,
+-          vy: Math.sin(angle) * speed,
+-          life: 2
+-        });
+-        enemy.cooldown = enemy.type === 'heavy' ? 1.1 : 0.85;
+-      }
+-    } else {
+-      enemy.phase += delta;
+-      enemy.x = enemy.homeX + Math.sin(enemy.phase * 0.6) * 12;
+-      enemy.y = enemy.homeY + Math.cos(enemy.phase * 0.5) * 8;
+-    }
+-  }
+-
+-  for (let index = game.enemyShots.length - 1; index >= 0; index--) {
+-    const shot = game.enemyShots[index];
+-    shot.x += shot.vx * delta;
+-    shot.y += shot.vy * delta;
+-    shot.life -= delta;
+-    if (shot.life <= 0 || blocked(game, shot.x, shot.y, 3)) {
+-      game.enemyShots.splice(index, 1);
+-      continue;
+-    }
+-    const target = room.players.find((player) =>
+-      player.connected && player.lives > 0 && player.invulnerable <= 0 &&
+-      Math.hypot(player.x - shot.x, player.y - shot.y) < PLAYER_RADIUS + 4
+-    );
+-    if (target) {
+-      damagePlayer(target);
+-      game.enemyShots.splice(index, 1);
+-    }
+-  }
+-
+-  for (const player of room.players) {
+-    if (!player.connected || player.lives <= 0) continue;
+-    for (const pickup of game.pickups) {
+-      if (pickup.collected || Math.hypot(player.x - pickup.x, player.y - pickup.y) > 24) continue;
+-      pickup.collected = true;
+-      player.ammo = Math.min(30, player.ammo + pickup.amount);
+-    }
+-    if (inputCanInteract(player) && game.enemies.length === 0 &&
+-        Math.hypot(player.x - game.map.exit.x, player.y - game.map.exit.y) < game.map.exit.radius + 22) {
+-      game.exitUnlocked = true;
+-      finishNexoGame(room, 'victory', finishGame);
+-      return;
+-    }
+-  }
+-
+-  if (!room.players.some((player) => player.connected && player.lives > 0)) {
+-    finishNexoGame(room, 'defeat', finishGame);
+-    return;
+-  }
+-  game.exitUnlocked = game.enemies.length === 0;
+-}
+-
+-function inputCanInteract(player) {
+-  return Boolean(player.input && player.input.interact);
+-}
+-
+-window.NexoSoloEngine = { createNexoGame, nexoGameSnapshot, tickNexoGame };
++// Compatibilidad: la simulación está en nexo-core.js, cargada antes de este archivo.
+--- original/multiplayer/nexo-game.js
++++ NEXO/multiplayer/nexo-game.js
+@@ -1,344 +1,5 @@
+-const WIDTH = 960;
+-const HEIGHT = 540;
+-const PLAYER_RADIUS = 12;
+-const PLAYER_SPEED = 190;
+-const ENEMY_RADIUS = 12;
+-const PLAYER_COLORS = ['#52f0d0', '#ffb65c'];
+-
+-const ARENA = {
+-  width: WIDTH,
+-  height: HEIGHT,
+-  walls: [
+-    { x: 0, y: 0, width: WIDTH, height: 18 },
+-    { x: 0, y: HEIGHT - 18, width: WIDTH, height: 18 },
+-    { x: 0, y: 0, width: 18, height: HEIGHT },
+-    { x: WIDTH - 18, y: 0, width: 18, height: HEIGHT },
+-    { x: 208, y: 88, width: 20, height: 160 },
+-    { x: 208, y: 326, width: 20, height: 126 },
+-    { x: 385, y: 18, width: 20, height: 114 },
+-    { x: 385, y: 210, width: 20, height: 132 },
+-    { x: 562, y: 88, width: 20, height: 160 },
+-    { x: 562, y: 326, width: 20, height: 126 },
+-    { x: 278, y: 266, width: 90, height: 18 },
+-    { x: 454, y: 266, width: 90, height: 18 },
+-    { x: 715, y: 168, width: 105, height: 18 }
+-  ],
+-  doors: [
+-    { id: 'door-west', x: 208, y: 248, width: 20, height: 78, open: false },
+-    { id: 'door-center', x: 385, y: 132, width: 20, height: 78, open: false },
+-    { id: 'door-east', x: 562, y: 248, width: 20, height: 78, open: false }
+-  ],
+-  cover: [
+-    { x: 96, y: 176, width: 58, height: 22 },
+-    { x: 284, y: 124, width: 52, height: 30 },
+-    { x: 292, y: 384, width: 68, height: 22 },
+-    { x: 466, y: 112, width: 62, height: 22 },
+-    { x: 466, y: 388, width: 62, height: 22 },
+-    { x: 642, y: 334, width: 72, height: 22 },
+-    { x: 812, y: 284, width: 54, height: 30 }
+-  ],
+-  exit: { x: 900, y: 270, radius: 25 }
+-};
+-
+-export function createNexoGame(room) {
+-  room.game = {
+-    map: structuredClone(ARENA),
+-    enemies: [
+-      { id: 'guard-a', x: 126, y: 94, homeX: 126, homeY: 94, hp: 1, alert: 0, cooldown: 0, phase: 0, type: 'scout' },
+-      { id: 'guard-b', x: 318, y: 190, homeX: 318, homeY: 190, hp: 1, alert: 0, cooldown: 0.5, phase: 1.4, type: 'scout' },
+-      { id: 'guard-c', x: 486, y: 78, homeX: 486, homeY: 78, hp: 2, alert: 0, cooldown: 1, phase: 2.8, type: 'heavy' },
+-      { id: 'guard-d', x: 664, y: 236, homeX: 664, homeY: 236, hp: 1, alert: 0, cooldown: 0.2, phase: 4.2, type: 'scout' },
+-      { id: 'guard-e', x: 814, y: 410, homeX: 814, homeY: 410, hp: 2, alert: 0, cooldown: 1.4, phase: 5.2, type: 'heavy' }
+-    ],
+-    playerShots: [],
+-    enemyShots: [],
+-    pickups: [
+-      { id: 'ammo-a', type: 'ammo', x: 296, y: 310, amount: 8, collected: false },
+-      { id: 'ammo-b', type: 'ammo', x: 690, y: 100, amount: 8, collected: false }
+-    ],
+-    score: 0,
+-    nextProjectileId: 0,
+-    lastSnapshotAt: 0,
+-    result: null,
+-    exitUnlocked: false
+-  };
+-  room.players.forEach((player, index) => {
+-    player.ready = false;
+-    player.spawnX = 72 + index * 44;
+-    player.spawnY = 270 + (index ? 22 : -22);
+-    player.x = player.spawnX;
+-    player.y = player.spawnY;
+-    player.angle = 0;
+-    player.lives = 3;
+-    player.score = 0;
+-    player.ammo = 10;
+-    player.weapon = 'sidearm';
+-    player.invulnerable = 0;
+-    player.fireCooldown = 0;
+-    player.meleeCooldown = 0;
+-    player.previousInteract = false;
+-    player.input = emptyInput();
+-    player.lastInputAt = Date.now();
+-  });
+-  room.phase = 'running';
+-}
+-
+-function emptyInput() {
+-  return { moveX: 0, moveY: 0, aimX: 0, aimY: 0, shoot: false, melee: false, interact: false };
+-}
+-
+-export function nexoGameSnapshot(room) {
+-  const game = room.game;
+-  if (!game) return null;
+-  return {
+-    map: game.map,
+-    enemies: game.enemies.map((enemy) => ({ ...enemy })),
+-    playerShots: game.playerShots.map((shot) => ({ ...shot })),
+-    enemyShots: game.enemyShots.map((shot) => ({ ...shot })),
+-    pickups: game.pickups.map((pickup) => ({ ...pickup })),
+-    score: game.score,
+-    exitUnlocked: game.exitUnlocked,
+-    result: game.result,
+-    players: room.players.map((player) => ({
+-      id: player.id,
+-      name: player.name,
+-      color: PLAYER_COLORS[room.players.indexOf(player) % PLAYER_COLORS.length],
+-      x: player.x,
+-      y: player.y,
+-      angle: player.angle,
+-      lives: player.lives,
+-      score: player.score,
+-      ammo: player.ammo,
+-      weapon: player.weapon,
+-      invulnerable: player.invulnerable,
+-      connected: player.connected
+-    }))
+-  };
+-}
+-
+-function overlapsCircleRect(x, y, radius, rect) {
+-  const closestX = Math.max(rect.x, Math.min(x, rect.x + rect.width));
+-  const closestY = Math.max(rect.y, Math.min(y, rect.y + rect.height));
+-  const dx = x - closestX;
+-  const dy = y - closestY;
+-  return dx * dx + dy * dy < radius * radius;
+-}
+-
+-function solidRects(game) {
+-  return [...game.map.walls, ...game.map.doors.filter((door) => !door.open), ...game.map.cover];
+-}
+-
+-function blocked(game, x, y, radius) {
+-  return solidRects(game).some((rect) => overlapsCircleRect(x, y, radius, rect));
+-}
+-
+-function moveEntity(game, entity, dx, dy, radius) {
+-  const nextX = Math.max(radius + 18, Math.min(WIDTH - radius - 18, entity.x + dx));
+-  if (!blocked(game, nextX, entity.y, radius)) entity.x = nextX;
+-  const nextY = Math.max(radius + 18, Math.min(HEIGHT - radius - 18, entity.y + dy));
+-  if (!blocked(game, entity.x, nextY, radius)) entity.y = nextY;
+-}
+-
+-function lineBlocked(game, x1, y1, x2, y2) {
+-  const distance = Math.hypot(x2 - x1, y2 - y1);
+-  const steps = Math.ceil(distance / 12);
+-  const solids = solidRects(game);
+-  for (let step = 1; step < steps; step++) {
+-    const x = x1 + (x2 - x1) * step / steps;
+-    const y = y1 + (y2 - y1) * step / steps;
+-    if (solids.some((rect) => x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height)) {
+-      return true;
+-    }
+-  }
+-  return false;
+-}
+-
+-function damagePlayer(player) {
+-  if (player.lives <= 0 || player.invulnerable > 0) return;
+-  player.lives -= 1;
+-  player.invulnerable = 1.2;
+-  if (player.lives > 0) {
+-    player.x = player.spawnX;
+-    player.y = player.spawnY;
+-  }
+-}
+-
+-function knockOutEnemy(game, index, room) {
+-  const [enemy] = game.enemies.splice(index, 1);
+-  game.score += enemy.type === 'heavy' ? 180 : 100;
+-  const scorer = room.players.find((player) => player.id === enemy.lastHitBy);
+-  if (scorer) scorer.score += enemy.type === 'heavy' ? 180 : 100;
+-}
+-
+-function finishNexoGame(room, result, finishGame) {
+-  if (room.game.result) return;
+-  room.game.result = result;
+-  finishGame(room);
+-}
+-
+-export function tickNexoGame(room, delta, now, finishGame) {
+-  if (room.phase !== 'running' || !room.game) return;
+-  const game = room.game;
+-  const connectedPlayers = room.players.filter((player) => player.connected && player.lives > 0);
+-
+-  for (const player of room.players) {
+-    if (!player.connected || player.lives <= 0) continue;
+-    if (now - player.lastInputAt > 300) player.input = emptyInput();
+-    const input = player.input;
+-    const moveLength = Math.hypot(input.moveX, input.moveY);
+-    if (moveLength > 0) {
+-      moveEntity(game, player, input.moveX / moveLength * PLAYER_SPEED * delta,
+-        input.moveY / moveLength * PLAYER_SPEED * delta, PLAYER_RADIUS);
+-    }
+-    if (Number.isFinite(input.aimX) && Number.isFinite(input.aimY)) {
+-      player.angle = Math.atan2(input.aimY - player.y, input.aimX - player.x);
+-    }
+-    player.invulnerable = Math.max(0, player.invulnerable - delta);
+-    player.fireCooldown = Math.max(0, player.fireCooldown - delta);
+-    player.meleeCooldown = Math.max(0, player.meleeCooldown - delta);
+-    if (input.interact && !player.previousInteract) {
+-      const door = game.map.doors.find((entry) =>
+-        Math.hypot(player.x - (entry.x + entry.width / 2), player.y - (entry.y + entry.height / 2)) < 58
+-      );
+-      if (door) door.open = !door.open;
+-    }
+-    player.previousInteract = input.interact;
+-
+-    if (input.shoot && player.ammo > 0 && player.fireCooldown <= 0) {
+-      const speed = 520;
+-      game.playerShots.push({
+-        id: ++game.nextProjectileId,
+-        ownerId: player.id,
+-        x: player.x + Math.cos(player.angle) * 18,
+-        y: player.y + Math.sin(player.angle) * 18,
+-        vx: Math.cos(player.angle) * speed,
+-        vy: Math.sin(player.angle) * speed,
+-        life: 1.5
+-      });
+-      player.ammo -= 1;
+-      player.fireCooldown = 0.22;
+-      game.enemies.forEach((enemy) => {
+-        if (Math.hypot(enemy.x - player.x, enemy.y - player.y) < 280) enemy.alert = 5;
+-      });
+-    }
+-
+-    if (input.melee && player.meleeCooldown <= 0) {
+-      player.meleeCooldown = 0.48;
+-      const target = game.enemies.find((enemy) => {
+-        const dx = enemy.x - player.x;
+-        const dy = enemy.y - player.y;
+-        const distance = Math.hypot(dx, dy);
+-        const angleDifference = Math.atan2(Math.sin(Math.atan2(dy, dx) - player.angle),
+-          Math.cos(Math.atan2(dy, dx) - player.angle));
+-        return distance < 38 && Math.abs(angleDifference) < 0.95;
+-      });
+-      if (target) {
+-        target.hp -= 1;
+-        target.lastHitBy = player.id;
+-        target.alert = 5;
+-        if (target.hp <= 0) knockOutEnemy(game, game.enemies.indexOf(target), room);
+-      }
+-    }
+-  }
+-
+-  for (let index = game.playerShots.length - 1; index >= 0; index--) {
+-    const shot = game.playerShots[index];
+-    shot.x += shot.vx * delta;
+-    shot.y += shot.vy * delta;
+-    shot.life -= delta;
+-    if (shot.life <= 0 || blocked(game, shot.x, shot.y, 3)) {
+-      game.playerShots.splice(index, 1);
+-      continue;
+-    }
+-    const enemyIndex = game.enemies.findIndex((enemy) =>
+-      Math.hypot(enemy.x - shot.x, enemy.y - shot.y) < ENEMY_RADIUS + 4
+-    );
+-    if (enemyIndex !== -1) {
+-      const enemy = game.enemies[enemyIndex];
+-      enemy.hp -= 1;
+-      enemy.lastHitBy = shot.ownerId;
+-      enemy.alert = 5;
+-      game.playerShots.splice(index, 1);
+-      if (enemy.hp <= 0) knockOutEnemy(game, enemyIndex, room);
+-    }
+-  }
+-
+-  for (const enemy of game.enemies) {
+-    enemy.alert = Math.max(0, enemy.alert - delta);
+-    enemy.cooldown = Math.max(0, enemy.cooldown - delta);
+-    const target = connectedPlayers
+-      .filter((player) => player.lives > 0)
+-      .sort((a, b) => Math.hypot(a.x - enemy.x, a.y - enemy.y) - Math.hypot(b.x - enemy.x, b.y - enemy.y))[0];
+-    if (!target) continue;
+-    const distance = Math.hypot(target.x - enemy.x, target.y - enemy.y);
+-    const seesTarget = distance < 340 && !lineBlocked(game, enemy.x, enemy.y, target.x, target.y);
+-    if (seesTarget) enemy.alert = Math.max(enemy.alert, 1.5);
+-    if (enemy.alert > 0) {
+-      if (distance > 120) {
+-        const dx = (target.x - enemy.x) / Math.max(distance, 1);
+-        const dy = (target.y - enemy.y) / Math.max(distance, 1);
+-        moveEntity(game, enemy, dx * 54 * delta, dy * 54 * delta, ENEMY_RADIUS);
+-      } else if (enemy.cooldown <= 0 && seesTarget) {
+-        const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x);
+-        const speed = enemy.type === 'heavy' ? 240 : 285;
+-        game.enemyShots.push({
+-          id: ++game.nextProjectileId,
+-          x: enemy.x + Math.cos(angle) * 16,
+-          y: enemy.y + Math.sin(angle) * 16,
+-          vx: Math.cos(angle) * speed,
+-          vy: Math.sin(angle) * speed,
+-          life: 2
+-        });
+-        enemy.cooldown = enemy.type === 'heavy' ? 1.1 : 0.85;
+-      }
+-    } else {
+-      enemy.phase += delta;
+-      enemy.x = enemy.homeX + Math.sin(enemy.phase * 0.6) * 12;
+-      enemy.y = enemy.homeY + Math.cos(enemy.phase * 0.5) * 8;
+-    }
+-  }
+-
+-  for (let index = game.enemyShots.length - 1; index >= 0; index--) {
+-    const shot = game.enemyShots[index];
+-    shot.x += shot.vx * delta;
+-    shot.y += shot.vy * delta;
+-    shot.life -= delta;
+-    if (shot.life <= 0 || blocked(game, shot.x, shot.y, 3)) {
+-      game.enemyShots.splice(index, 1);
+-      continue;
+-    }
+-    const target = room.players.find((player) =>
+-      player.connected && player.lives > 0 && player.invulnerable <= 0 &&
+-      Math.hypot(player.x - shot.x, player.y - shot.y) < PLAYER_RADIUS + 4
+-    );
+-    if (target) {
+-      damagePlayer(target);
+-      game.enemyShots.splice(index, 1);
+-    }
+-  }
+-
+-  for (const player of room.players) {
+-    if (!player.connected || player.lives <= 0) continue;
+-    for (const pickup of game.pickups) {
+-      if (pickup.collected || Math.hypot(player.x - pickup.x, player.y - pickup.y) > 24) continue;
+-      pickup.collected = true;
+-      player.ammo = Math.min(30, player.ammo + pickup.amount);
+-    }
+-    if (inputCanInteract(player) && game.enemies.length === 0 &&
+-        Math.hypot(player.x - game.map.exit.x, player.y - game.map.exit.y) < game.map.exit.radius + 22) {
+-      game.exitUnlocked = true;
+-      finishNexoGame(room, 'victory', finishGame);
+-      return;
+-    }
+-  }
+-
+-  if (!room.players.some((player) => player.connected && player.lives > 0)) {
+-    finishNexoGame(room, 'defeat', finishGame);
+-    return;
+-  }
+-  game.exitUnlocked = game.enemies.length === 0;
+-}
+-
+-function inputCanInteract(player) {
+-  return Boolean(player.input && player.input.interact);
+-}
++// Fachada ES module: reglas compartidas, sin copia de simulación.
++import '../maps.js';
++import * as shared from './nexo-core.js';
++const api=shared.default||globalThis.NexoSoloEngine;
++export const {createNexoGame,tickNexoGame,nexoGameSnapshot}=api;

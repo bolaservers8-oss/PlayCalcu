@@ -1,0 +1,9 @@
+{
+  "suite": "táctil",
+  "passed": 2,
+  "checks": [
+    "Movimiento mediante toque sostenido real",
+    "Disparo mediante toque breve"
+  ],
+  "scope": "Chromium emulando dispositivo móvil; no dispositivo físico."
+}

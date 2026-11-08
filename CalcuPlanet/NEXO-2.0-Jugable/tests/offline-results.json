@@ -1,0 +1,10 @@
+{
+  "suite": "distribución autónoma",
+  "passed": 3,
+  "checks": [
+    "HTML único abierto mediante file:// sin red",
+    "Solitario y movimiento sin servidor",
+    "Editor y prueba de mapa sin conexión"
+  ],
+  "errors": []
+}

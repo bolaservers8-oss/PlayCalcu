@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090d13">
+  <title>NEXO · Distrito Umbral</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #090d13;
+      color: #e7f4ee;
+    }
+    * { box-sizing: border-box; }
+    body { min-width: 320px; min-height: 100vh; margin: 0; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .home {
+      display: grid;
+      min-height: 100vh;
+      place-content: center;
+      gap: 16px;
+      padding: 28px;
+      background: radial-gradient(ellipse at 50% 20%, #172b31 0, #090d13 65%);
+      text-align: center;
+    }
+    .home[hidden] { display: none; }
+    .home h1 { margin: 0; color: #a6f2d8; font: 800 clamp(1.4rem, 5vw, 2rem) Consolas, monospace; letter-spacing: .12em; }
+    .home p { max-width: 580px; margin: 0 auto; color: #bdcec6; line-height: 1.6; }
+    .home-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .home button {
+      min-height: 48px;
+      padding: 10px 24px;
+      border: 0;
+      border-radius: 6px;
+      background: #a6f2d8;
+      color: #10211c;
+      font-weight: 800;
+    }
+    .home button.secondary { border: 1px solid rgba(166, 242, 216, .35); background: #172326; color: #e7f4ee; }
+    .nexo-panel {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      inset: 0;
+      overflow: auto;
+      padding: 14px;
+      background: radial-gradient(ellipse at 50% 20%, #172b31 0, #090d13 65%);
+      color: #e7f4ee;
+    }
+    .nexo-panel.active { display: grid; place-items: center; }
+    .nexo-shell { display: grid; gap: 9px; width: min(100%, 1120px); margin: auto; }
+    .nexo-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #a6f2d8;
+      font: 800 clamp(1rem, 3vw, 1.4rem) Consolas, monospace;
+      letter-spacing: .12em;
+    }
+    .nexo-heading button, .nexo-lobby button, .nexo-game button {
+      min-height: 42px;
+      margin: 0;
+      border: 1px solid rgba(166, 242, 216, .28);
+      border-radius: 5px;
+      background: #172326;
+      color: #e7f4ee;
+    }
+    .nexo-lobby {
+      display: grid;
+      gap: 12px;
+      width: min(100%, 620px);
+      margin: 0 auto;
+      padding: clamp(14px, 4vw, 28px);
+      border: 1px solid rgba(166, 242, 216, .25);
+      border-radius: 12px;
+      background: rgba(8, 15, 17, .92);
+      text-align: left;
+    }
+    .nexo-lobby[hidden], .nexo-game[hidden] { display: none !important; }
+    .nexo-lobby h2 { margin: 0; color: #a6f2d8; font-size: 1.1rem; }
+    .nexo-lobby p { margin: 0; color: #afc1ba; font-size: .9rem; line-height: 1.5; }
+    .nexo-lobby label { display: grid; gap: 5px; color: #c4d6ce; font-size: .85rem; }
+    .nexo-lobby input, .nexo-lobby select {
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid rgba(166, 242, 216, .22);
+      border-radius: 6px;
+      background: #0c1315;
+      color: #eaf5ef;
+    }
+    .nexo-room-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .nexo-lobby .nexo-primary { background: #a6f2d8; color: #10211c; font-weight: 800; }
+    .nexo-room-list { display: grid; gap: 6px; }
+    .nexo-room-list:empty { display: none; }
+    .nexo-room-row, .nexo-lobby-player {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #d3e2db;
+      font-size: .85rem;
+    }
+    .nexo-lobby-players { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+    .nexo-lobby-players li { padding: 7px 9px; border-left: 2px solid #a6f2d8; background: rgba(255,255,255,.035); }
+    .nexo-lobby-code { color: #a6f2d8; font: 800 1.4rem Consolas, monospace; letter-spacing: .16em; }
+    .nexo-status { min-height: 1.3em; color: #bdcec6 !important; }
+    .nexo-game { display: grid; gap: 8px; }
+    .nexo-hud {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 18px;
+      color: #d1e2d9;
+      font: 700 clamp(.7rem, 1.8vw, .9rem) Consolas, monospace;
+    }
+    .nexo-hud span { color: #a6f2d8; }
+    #nexoCanvas {
+      display: block;
+      width: auto;
+      height: min(calc(100dvh - 230px), calc((100vw - 40px) / 1.7778));
+      max-width: 100%;
+      max-height: 100%;
+      margin: 0 auto;
+      aspect-ratio: 16 / 9;
+      border: 1px solid rgba(166, 242, 216, .32);
+      border-radius: 8px;
+      background: #11191a;
+      touch-action: none;
+    }
+    .nexo-controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .nexo-dpad { display: grid; grid-template-columns: repeat(3, minmax(44px, 68px)); grid-template-rows: repeat(2, 44px); gap: 4px; }
+    .nexo-dpad button, .nexo-actions button { min-height: 44px; padding: 7px; touch-action: none; user-select: none; }
+    .nexo-dpad [data-nexo-control="up"] { grid-column: 2; }
+    .nexo-dpad [data-nexo-control="left"] { grid-column: 1; grid-row: 2; }
+    .nexo-dpad [data-nexo-control="down"] { grid-column: 2; grid-row: 2; }
+    .nexo-dpad [data-nexo-control="right"] { grid-column: 3; grid-row: 2; }
+    .nexo-actions { display: flex; gap: 7px; }
+    .nexo-actions button { flex: 1 1 80px; min-width: 0; }
+    .nexo-panel.nexo-playing .nexo-game > .nexo-room-actions { display: none; }
+    .nexo-actions [data-nexo-control="shoot"] { border-color: #df896c; color: #ffd2be; }
+    .nexo-game-status { min-height: 1.2em; margin: 0; color: #afc1ba; text-align: center; font-size: .82rem; }
+    .nexo-orientation { display: none; color: #a6f2d8 !important; text-align: center; }
+    @media (orientation: portrait) and (max-width: 760px) {
+      .nexo-orientation { display: block; }
+      .nexo-panel { align-items: start; }
+      #nexoCanvas { height: min(calc(100vw * .5625), 46dvh); }
+      .nexo-controls { align-items: end; }
+      .nexo-actions { flex-wrap: wrap; justify-content: end; }
+    }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .nexo-panel { padding: 6px 8px; }
+      .nexo-shell { gap: 6px; }
+      .nexo-heading { font-size: .95rem; }
+      .nexo-heading button { min-height: 30px; padding: 4px 8px; }
+      .nexo-game { gap: 6px; }
+      .nexo-hud { gap: 4px 10px; font-size: .68rem; }
+      #nexoCanvas { height: min(calc(100dvh - 178px), calc((100vw - 30px) / 1.7778)); }
+      .nexo-controls { width: 100%; gap: 8px; }
+      .nexo-dpad { grid-template-columns: repeat(3, minmax(36px, 52px)); grid-template-rows: repeat(2, 34px); }
+      .nexo-dpad button, .nexo-actions button { min-height: 34px; padding: 4px; font-size: .68rem; }
+      .nexo-actions { flex: 0 1 auto; gap: 4px; }
+      .nexo-actions button { flex: 0 1 auto; }
+      .nexo-game-status { font-size: .72rem; }
+    }
+    @media (max-width: 440px) {
+      .nexo-panel { padding: 8px; }
+      .nexo-heading { letter-spacing: .04em; }
+      .nexo-controls { gap: 6px; }
+      .nexo-dpad { grid-template-columns: repeat(3, minmax(36px, 48px)); grid-template-rows: repeat(2, 40px); }
+      .nexo-dpad button, .nexo-actions button { min-height: 40px; }
+      .nexo-actions { flex: 1; flex-wrap: wrap; justify-content: end; gap: 4px; }
+      .nexo-actions button { flex: 1 1 72px; }
+    }
+  </style>
+</head>
+<body>
+  <main id="standaloneHome" class="home">
+    <h1>NEXO · DISTRITO UMBRAL</h1>
+    <p>Juego original de acción cenital. Juega en solitario o coordínate online para abrir rutas y alcanzar la extracción.</p>
+    <p>Controles de PC: WASD o flechas para moverte, ratón para apuntar, clic o F para disparar, espacio para golpear y E para interactuar. En móvil se recomienda jugar en horizontal.</p>
+    <div class="home-actions">
+      <button id="playNexoSolo" type="button">Jugar solo</button>
+      <button id="openNexo" class="secondary" type="button">Jugar cooperativo online</button>
+    </div>
+  </main>
+  <section id="nexoPanel" class="nexo-panel" aria-label="Nexo: Distrito Umbral">
+    <div class="nexo-shell">
+      <header class="nexo-heading">
+        <span>NEXO · DISTRITO UMBRAL</span>
+        <button id="nexoExit" type="button">Volver al inicio</button>
+      </header>
+      <section id="nexoLobbyView" class="nexo-lobby">
+        <h2>OPERACIÓN: UMBRAL</h2>
+        <p>Un juego cooperativo original de acción cenital. Coordínense para abrir rutas, desarmar la vigilancia y alcanzar la salida.</p>
+        <label for="nexoNickname">Nombre de agente
+          <input id="nexoNickname" maxlength="20" autocomplete="nickname" placeholder="Agente">
+        </label>
+        <label for="nexoVisibility">Visibilidad de sala
+          <select id="nexoVisibility">
+            <option value="private">Privada · solo con código</option>
+            <option value="public">Pública · aparece en la lista</option>
+          </select>
+        </label>
+        <div class="nexo-room-actions">
+          <button id="nexoCreateRoom" class="nexo-primary" type="button">Crear sala</button>
+          <button id="nexoRefreshRooms" type="button">Buscar salas</button>
+        </div>
+        <label for="nexoJoinCode">Código de invitación
+          <input id="nexoJoinCode" maxlength="6" autocomplete="off" placeholder="ABC123">
+        </label>
+        <button id="nexoJoinRoom" type="button">Unirse con código</button>
+        <div id="nexoPublicRooms" class="nexo-room-list" aria-live="polite"></div>
+        <section id="nexoLobby" class="nexo-lobby" hidden>
+          <div><p>CÓDIGO DE INVITACIÓN</p><div id="nexoLobbyCode" class="nexo-lobby-code"></div></div>
+          <div class="nexo-room-actions">
+            <button id="nexoCopyInvite" type="button">Copiar código</button>
+            <button id="nexoLeaveRoom" type="button">Salir de sala</button>
+          </div>
+          <ul id="nexoPlayerList" class="nexo-lobby-players"></ul>
+          <button id="nexoReady" type="button">Marcarme listo</button>
+          <button id="nexoStartGame" class="nexo-primary" type="button" hidden>Iniciar operación</button>
+          <p>Cooperativo para dos agentes. El anfitrión inicia cuando ambos estén listos.</p>
+        </section>
+        <p id="nexoOnlineStatus" class="nexo-status" role="status" aria-live="polite"></p>
+        <p>La partida online necesita conexión con el servidor configurado en <code>data-map-config.js</code>.</p>
+      </section>
+      <section id="nexoGameView" class="nexo-game" hidden>
+        <div class="nexo-hud">
+          <div>AGENTES <span id="nexoHudPlayers">2</span></div>
+          <div>RESERVA <span id="nexoHudLives">3</span></div>
+          <div>MUNICIÓN <span id="nexoHudAmmo">10</span></div>
+          <div>OBJETIVO <span id="nexoHudObjective">Neutralizar vigilancia</span></div>
+          <div>EQUIPO <span id="nexoHudScore">0</span></div>
+        </div>
+        <canvas id="nexoCanvas" width="960" height="540" aria-label="Arena cooperativa de Nexo"></canvas>
+        <p class="nexo-orientation">Girá el dispositivo a horizontal para jugar con más espacio.</p>
+        <div class="nexo-controls" aria-label="Controles táctiles de Nexo">
+          <div class="nexo-dpad">
+            <button type="button" data-nexo-control="up" aria-label="Mover arriba">▲</button>
+            <button type="button" data-nexo-control="left" aria-label="Mover a la izquierda">◀</button>
+            <button type="button" data-nexo-control="down" aria-label="Mover abajo">▼</button>
+            <button type="button" data-nexo-control="right" aria-label="Mover a la derecha">▶</button>
+          </div>
+          <div class="nexo-actions">
+            <button type="button" data-nexo-control="interact">ABRIR / USAR</button>
+            <button type="button" data-nexo-control="melee">GOLPE</button>
+            <button type="button" data-nexo-control="shoot">DISPARAR</button>
+          </div>
+        </div>
+        <p id="nexoGameStatus" class="nexo-game-status" aria-live="polite"></p>
+        <div class="nexo-room-actions">
+          <button id="nexoReturnLobby" type="button">Volver a la sala</button>
+          <button id="nexoGameExit" type="button">Salir al menú</button>
+        </div>
+      </section>
+    </div>
+  </section>
+  <script src="data-map-config.js"></script>
+  <script src="multiplayer/nexo-solo-engine.js"></script>
+  <script src="nexo-coop-client.js"></script>
+  <script>
+    window.setCalcuNexoMode = function (active) {
+      document.getElementById('nexoPanel').classList.toggle('active', active);
+      document.getElementById('standaloneHome').hidden = active;
+    };
+    window.playCalcuGameSound = function () {};
+    document.getElementById('openNexo').addEventListener('click', () => window.openNexoGame());
+    document.addEventListener('keydown', (event) => {
+      if (window.NexoGame) window.NexoGame.handleKeyDown(event);
+    });
+    document.addEventListener('keyup', (event) => {
+      if (window.NexoGame) window.NexoGame.handleKeyUp(event);
+    });
+    window.addEventListener('blur', () => {
+      if (window.NexoGame) window.NexoGame.releaseAll();
+    });
+  </script>
+</body>
+</html>

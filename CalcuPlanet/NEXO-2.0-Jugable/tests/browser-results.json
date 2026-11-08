@@ -1,0 +1,16 @@
+{
+  "suite": "navegador",
+  "passed": 8,
+  "checks": [
+    "Construcción visual: pared, ventana, puerta, obstáculo, enemigo y patrulla",
+    "Guardado local real",
+    "Cerrar, recargar navegador y recuperar mapa",
+    "Mapa del editor jugado con disparo e impacto reales",
+    "Completar nivel y mostrar resumen/puntuación",
+    "Regreso al editor sin contaminar el mapa con la simulación",
+    "Cooperativo: lobby, listo e inicio en dos navegadores aislados",
+    "Cooperativo: movimiento remoto reflejado por el servidor"
+  ],
+  "errors": [],
+  "scope": "Chromium real; dos contextos aislados en un solo equipo."
+}

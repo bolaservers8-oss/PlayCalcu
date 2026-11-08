@@ -1,0 +1,609 @@
+{
+  "id": "habitaciones",
+  "name": "01 · Umbral / Habitaciones",
+  "author": "NEXO",
+  "version": 2,
+  "width": 960,
+  "height": 540,
+  "floors": [
+    {
+      "x": 18,
+      "y": 18,
+      "width": 260,
+      "height": 230,
+      "color": "#253039",
+      "label": "RECEPCIÓN",
+      "id": "floors-0"
+    },
+    {
+      "x": 18,
+      "y": 306,
+      "width": 260,
+      "height": 216,
+      "color": "#303025",
+      "label": "ARCHIVO",
+      "id": "floors-1"
+    },
+    {
+      "x": 278,
+      "y": 18,
+      "width": 300,
+      "height": 230,
+      "color": "#293433",
+      "label": "OFICINA",
+      "id": "floors-2"
+    },
+    {
+      "x": 278,
+      "y": 306,
+      "width": 300,
+      "height": 216,
+      "color": "#342b32",
+      "label": "DESCANSO",
+      "id": "floors-3"
+    },
+    {
+      "x": 578,
+      "y": 18,
+      "width": 364,
+      "height": 504,
+      "color": "#233036",
+      "label": "CONTROL",
+      "id": "floors-4"
+    },
+    {
+      "x": 18,
+      "y": 248,
+      "width": 560,
+      "height": 58,
+      "color": "#193b3b",
+      "label": "PASILLO",
+      "id": "floors-5"
+    }
+  ],
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 960,
+      "height": 18,
+      "id": "walls-0",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 522,
+      "width": 960,
+      "height": 18,
+      "id": "walls-1",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-2",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 942,
+      "y": 0,
+      "width": 18,
+      "height": 540,
+      "id": "walls-3",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 208,
+      "width": 16,
+      "height": 40,
+      "id": "walls-4",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 306,
+      "width": 16,
+      "height": 216,
+      "id": "walls-5",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 18,
+      "y": 240,
+      "width": 130,
+      "height": 12,
+      "id": "walls-6",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 212,
+      "y": 240,
+      "width": 58,
+      "height": 12,
+      "id": "walls-7",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 18,
+      "y": 300,
+      "width": 130,
+      "height": 12,
+      "id": "walls-8",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 212,
+      "y": 300,
+      "width": 58,
+      "height": 12,
+      "id": "walls-9",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 286,
+      "y": 240,
+      "width": 110,
+      "height": 12,
+      "id": "walls-10",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 460,
+      "y": 240,
+      "width": 110,
+      "height": 12,
+      "id": "walls-11",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 286,
+      "y": 300,
+      "width": 110,
+      "height": 12,
+      "id": "walls-12",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 460,
+      "y": 300,
+      "width": 110,
+      "height": 12,
+      "id": "walls-13",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 570,
+      "y": 18,
+      "width": 16,
+      "height": 220,
+      "id": "walls-14",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 570,
+      "y": 312,
+      "width": 16,
+      "height": 210,
+      "id": "walls-15",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 18,
+      "width": 16,
+      "height": 92,
+      "id": "walls-16",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    },
+    {
+      "x": 270,
+      "y": 178,
+      "width": 16,
+      "height": 62,
+      "id": "walls-17",
+      "surface": "concrete",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 99,
+      "hp": 0
+    }
+  ],
+  "spawns": [
+    {
+      "x": 72,
+      "y": 270,
+      "id": "spawns-0"
+    },
+    {
+      "x": 112,
+      "y": 276,
+      "id": "spawns-1"
+    }
+  ],
+  "exits": [
+    {
+      "x": 890,
+      "y": 270,
+      "radius": 25,
+      "id": "exits-0"
+    }
+  ],
+  "weapons": [
+    {
+      "x": 112,
+      "y": 270,
+      "weapon": "shotgun",
+      "ammo": 6,
+      "id": "weapons-0"
+    }
+  ],
+  "enemies": [
+    {
+      "x": 180,
+      "y": 140,
+      "angle": 1.57,
+      "type": "melee",
+      "weapon": "bat",
+      "behavior": "IDLE",
+      "id": "enemies-0"
+    },
+    {
+      "x": 430,
+      "y": 160,
+      "angle": 1.57,
+      "type": "pistol",
+      "weapon": "pistol",
+      "behavior": "PATROL",
+      "patrol": "p1",
+      "id": "enemies-1"
+    },
+    {
+      "x": 150,
+      "y": 420,
+      "angle": -1.57,
+      "type": "melee",
+      "weapon": "knife",
+      "id": "enemies-2"
+    },
+    {
+      "x": 490,
+      "y": 430,
+      "angle": -1.57,
+      "type": "shotgun",
+      "weapon": "shotgun",
+      "id": "enemies-3"
+    },
+    {
+      "x": 840,
+      "y": 160,
+      "angle": 3.14,
+      "type": "heavy",
+      "weapon": "rifle",
+      "id": "enemies-4"
+    }
+  ],
+  "doors": [
+    {
+      "x": 148,
+      "y": 240,
+      "width": 64,
+      "height": 12,
+      "direction": -1,
+      "id": "doors-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 148,
+      "y": 300,
+      "width": 64,
+      "height": 12,
+      "id": "doors-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 396,
+      "y": 240,
+      "width": 64,
+      "height": 12,
+      "direction": -1,
+      "id": "doors-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 396,
+      "y": 300,
+      "width": 64,
+      "height": 12,
+      "id": "doors-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    },
+    {
+      "x": 570,
+      "y": 238,
+      "width": 16,
+      "height": 74,
+      "id": "doors-4",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0,
+      "open": false,
+      "direction": 1,
+      "swing": "fixed",
+      "progress": 0
+    }
+  ],
+  "windows": [
+    {
+      "x": 270,
+      "y": 110,
+      "width": 16,
+      "height": 68,
+      "id": "windows-0",
+      "surface": "glass",
+      "blocksMovement": true,
+      "blocksVision": false,
+      "blocksProjectiles": true,
+      "resistance": 0,
+      "hp": 1
+    }
+  ],
+  "obstacles": [
+    {
+      "x": 76,
+      "y": 90,
+      "width": 95,
+      "height": 32,
+      "label": "Mostrador",
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 350,
+      "y": 80,
+      "width": 90,
+      "height": 42,
+      "label": "Escritorio",
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 320,
+      "y": 400,
+      "width": 120,
+      "height": 30,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 710,
+      "y": 180,
+      "width": 32,
+      "height": 170,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "patrols": [
+    {
+      "id": "p1",
+      "points": [
+        {
+          "x": 340,
+          "y": 170
+        },
+        {
+          "x": 490,
+          "y": 170
+        }
+      ]
+    }
+  ],
+  "cover": [
+    {
+      "x": 76,
+      "y": 90,
+      "width": 95,
+      "height": 32,
+      "label": "Mostrador",
+      "id": "obstacles-0",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 350,
+      "y": 80,
+      "width": 90,
+      "height": 42,
+      "label": "Escritorio",
+      "id": "obstacles-1",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 320,
+      "y": 400,
+      "width": 120,
+      "height": 30,
+      "id": "obstacles-2",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    },
+    {
+      "x": 710,
+      "y": 180,
+      "width": 32,
+      "height": 170,
+      "id": "obstacles-3",
+      "surface": "wood",
+      "blocksMovement": true,
+      "blocksVision": true,
+      "blocksProjectiles": true,
+      "resistance": 1,
+      "hp": 0
+    }
+  ],
+  "exit": {
+    "x": 890,
+    "y": 270,
+    "radius": 25,
+    "id": "exits-0"
+  }
+}

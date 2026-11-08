@@ -1,0 +1,27 @@
+{
+  "suite": "red",
+  "checks": [
+    "Crear sala con mapa validado",
+    "Listado público",
+    "Dos clientes conectados",
+    "Preparación e inicio compartidos",
+    "Movimiento autoritativo y rechazo de estado inventado",
+    "Desconexión y transferencia de anfitrión",
+    "Reconexión con identidad y snapshot",
+    "Disparo impacto baja y puntos sincronizados",
+    "Extracción y resultado final idéntico",
+    "Regreso a sala",
+    "Servidor rechaza mapas inválidos",
+    "Publicación y descarga centralizada"
+  ],
+  "passed": 12,
+  "remote": {
+    "url": "wss://playcalcu.onrender.com/galaxy",
+    "status": "Conexión establecida",
+    "response": {
+      "type": "roomList",
+      "rooms": []
+    }
+  },
+  "scope": "Dos clientes WebSocket independientes en el mismo equipo; no dos computadoras físicas."
+}
